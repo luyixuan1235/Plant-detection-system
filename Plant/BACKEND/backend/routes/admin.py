@@ -157,6 +157,45 @@ def lock_seat(seat_id: str, minutes: int = 5, db: Session = Depends(get_db)) -> 
 		lock_until_ts=seat.lock_until_ts,
 		seat_color=base_color,
 		admin_color=admin_color,
+		is_diseased=seat.is_diseased,
+		disease_name=seat.disease_name,
+		disease_confidence=seat.disease_confidence,
+		last_disease_check_ts=seat.last_disease_check_ts,
 	)
 
+
+@router.post("/seats/{seat_id}/health", response_model=SeatOut)
+def update_health_status(seat_id: str, is_healthy: bool, db: Session = Depends(get_db)) -> SeatOut:
+	seat = db.query(Seat).filter(Seat.seat_id == seat_id).first()
+	if not seat:
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="seat not found")
+
+	now = int(time.time())
+	seat.is_diseased = not is_healthy
+	if is_healthy:
+		seat.disease_name = None
+		seat.disease_confidence = None
+	seat.last_disease_check_ts = now
+
+	db.add(seat)
+	db.commit()
+	db.refresh(seat)
+
+	base_color = compute_seat_color(seat.is_empty, seat.has_power, seat.is_reported)
+	admin_color = compute_admin_color(base_color, seat.is_malicious, seat.is_empty, seat.has_power)
+	return SeatOut(
+		seat_id=seat.seat_id,
+		floor_id=seat.floor_id,
+		has_power=seat.has_power,
+		is_empty=seat.is_empty,
+		is_reported=seat.is_reported,
+		is_malicious=seat.is_malicious,
+		lock_until_ts=seat.lock_until_ts,
+		seat_color=base_color,
+		admin_color=admin_color,
+		is_diseased=seat.is_diseased,
+		disease_name=seat.disease_name,
+		disease_confidence=seat.disease_confidence,
+		last_disease_check_ts=seat.last_disease_check_ts,
+	)
 

@@ -1,20 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
-
-// 1. 定义颜色常量，用于座位状态和UI元素
-class AppColors {
-  // 座位状态颜色
-  static const green = Color(0xFF60D937); // 空闲 (Available)
-  static const blue = Color(0xFF00A1FF);  // 空闲 (有插座)
-  static const grey = Color(0xFF929292);  // 占用 (Occupied)
-  static const yellow = Color(0xFFFEAE03); // 可疑占座/警告 (Suspicious/Warning)
-  static const red = Color(0xFFFF5252);   // 满座/错误 (Full/Error)
-  
-  // UI 颜色
-  static const reportButton = Color(0xFFEF949E);   // 报告按钮 (Report)
-  static const confirmButton = Color(0xFFC9E5B3);  // 确认按钮 (Confirm)
-  static const dialogBackground = Color(0xFFABB8C8); // 对话框背景 (Dialog Background)
-}
+import '../theme/app_theme.dart';
 
 // 座位数据模型
 class Seat {
@@ -36,7 +22,12 @@ class Seat {
   });
 
   // 从 API 响应创建 Seat（需要提供位置信息）
-  factory Seat.fromApiResponse(SeatResponse apiSeat, {required double top, required double left, required bool isAdmin}) {
+  factory Seat.fromApiResponse(
+    SeatResponse apiSeat, {
+    required double top,
+    required double left,
+    required bool isAdmin,
+  }) {
     // 先确定原始状态（举报前的状态）
     String originalStatus;
     if (!apiSeat.isEmpty) {
@@ -46,11 +37,11 @@ class Seat {
     } else {
       originalStatus = 'empty';
     }
-    
+
     String status = originalStatus;
     String? previousStatus;
     String? apiColor;
-    
+
     // 如果是管理员且 (is_malicious 或 is_reported)，显示为 suspicious
     if (isAdmin) {
       if (apiSeat.isMalicious) {
@@ -108,17 +99,21 @@ class Seat {
         // 如果解析失败，使用默认逻辑
       }
     }
-    
+
     // 否则使用默认逻辑
     switch (status) {
-      case 'occupied': return AppColors.grey;
-      case 'suspicious': return AppColors.yellow;
-      case 'has_power': return AppColors.blue;
+      case 'occupied':
+        return AppColors.grey;
+      case 'suspicious':
+        return AppColors.yellow;
+      case 'has_power':
+        return AppColors.blue;
       case 'empty':
-      default: return AppColors.green;
+      default:
+        return AppColors.green;
     }
   }
-  
+
   // 获取显示状态（对于非管理员用户，如果座位被举报则显示previousStatus）
   String getDisplayStatus(bool isAdmin) {
     // 非管理员用户：如果座位状态是suspicious（被举报），显示举报前的状态
@@ -136,7 +131,7 @@ class Seat {
     // 管理员用户或非suspicious状态，使用正常状态
     return status;
   }
-  
+
   // 获取显示颜色（对于非管理员用户，如果座位被举报则显示举报前的颜色）
   Color getDisplayColor(bool isAdmin) {
     // 非管理员用户：如果座位状态是suspicious（被举报），显示举报前的颜色
@@ -146,10 +141,13 @@ class Seat {
         // 如果有previousStatus，使用previousStatus对应的颜色
         if (previousStatus != null) {
           switch (previousStatus!) {
-            case 'occupied': return AppColors.grey;
-            case 'has_power': return AppColors.blue;
+            case 'occupied':
+              return AppColors.grey;
+            case 'has_power':
+              return AppColors.blue;
             case 'empty':
-            default: return AppColors.green;
+            default:
+              return AppColors.green;
           }
         }
         // 如果没有previousStatus，假设举报前是occupied（灰色）
@@ -169,11 +167,11 @@ class FloorInfo {
 
   // 关键修复: 将构造函数改为 const
   const FloorInfo({
-    required this.label, 
-    required this.availableCount, 
-    required this.totalSeats 
+    required this.label,
+    required this.availableCount,
+    required this.totalSeats,
   });
-  
+
   // 楼层选择器颜色逻辑
   Color get color {
     if (availableCount == 0) return AppColors.red;

@@ -13,30 +13,35 @@ class ApiService {
   }
 
   void _initDio() {
-    _dio = Dio(BaseOptions(
-      baseUrl: ApiConfig.baseUrl,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
-    ));
+    _dio = Dio(
+      BaseOptions(
+        baseUrl: ApiConfig.baseUrl,
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 10),
+      ),
+    );
 
     // 添加 token 拦截器
-    _dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final prefs = await SharedPreferences.getInstance();
-        final token = prefs.getString('token');
-        if (token != null) {
-          options.headers['Authorization'] = 'Bearer $token';
-        }
-        handler.next(options);
-      },
-    ));
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final prefs = await SharedPreferences.getInstance();
+          final token = prefs.getString('token');
+          if (token != null) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+          handler.next(options);
+        },
+      ),
+    );
   }
 
   // 获取座位列表
   Future<List<SeatResponse>> getSeats({String? floor}) async {
-    final response = await _dio.get('/seats', queryParameters: {
-      if (floor != null) 'floor': floor,
-    });
+    final response = await _dio.get(
+      '/seats',
+      queryParameters: {if (floor != null) 'floor': floor},
+    );
     return (response.data as List)
         .map((json) => SeatResponse.fromJson(json))
         .toList();
@@ -67,9 +72,10 @@ class ApiService {
 
   // 获取异常列表（管理员）
   Future<List<AnomalyResponse>> getAnomalies({String? floor}) async {
-    final response = await _dio.get('/admin/anomalies', queryParameters: {
-      if (floor != null) 'floor': floor,
-    });
+    final response = await _dio.get(
+      '/admin/anomalies',
+      queryParameters: {if (floor != null) 'floor': floor},
+    );
     return (response.data as List)
         .map((json) => AnomalyResponse.fromJson(json))
         .toList();
@@ -95,8 +101,48 @@ class ApiService {
 
   // 锁定座位（管理员）
   Future<SeatResponse> lockSeat(String seatId, {int minutes = 5}) async {
-    final response = await _dio.post('/admin/seats/$seatId/lock', queryParameters: {'minutes': minutes});
+    final response = await _dio.post(
+      '/admin/seats/$seatId/lock',
+      queryParameters: {'minutes': minutes},
+    );
     return SeatResponse.fromJson(response.data);
+  }
+
+  // 更新树木健康状态（管理员）
+  Future<SeatResponse> updateHealthStatus(String seatId, {required bool isHealthy}) async {
+    final response = await _dio.post(
+      '/admin/seats/$seatId/health',
+      queryParameters: {'is_healthy': isHealthy},
+    );
+    return SeatResponse.fromJson(response.data);
+  }
+
+  // 管理员浇水打卡
+  Future<WateringCheckinResponse> submitWateringCheckin({
+    required double latitude,
+    required double longitude,
+  }) async {
+    final response = await _dio.post(
+      '/admin/watering/checkin',
+      data: {'latitude': latitude, 'longitude': longitude},
+    );
+    return WateringCheckinResponse.fromJson(response.data);
+  }
+
+  // 获取管理员最近浇水打卡记录
+  Future<List<WateringCheckinResponse>> getLatestWateringCheckins({
+    int limit = 5,
+  }) async {
+    final response = await _dio.get(
+      '/admin/watering/checkins',
+      queryParameters: {'limit': limit},
+    );
+    return (response.data as List<dynamic>)
+        .map(
+          (json) =>
+              WateringCheckinResponse.fromJson(json as Map<String, dynamic>),
+        )
+        .toList();
   }
 
   // 用户登出
@@ -120,7 +166,7 @@ class ApiService {
     debugPrint('DEBUG submitReport: seatId=$seatId, reporterId=$reporterId');
     debugPrint('DEBUG submitReport: text=$text');
     debugPrint('DEBUG submitReport: images=${images?.length ?? 0}');
-    
+
     final formData = FormData();
     formData.fields.addAll([
       MapEntry('seat_id', seatId),
@@ -129,17 +175,21 @@ class ApiService {
     if (text != null && text.isNotEmpty) {
       formData.fields.add(MapEntry('text', text));
     }
-    
+
     if (images != null && images.isNotEmpty) {
       debugPrint('DEBUG submitReport: Processing ${images.length} image(s)...');
       for (var idx = 0; idx < images.length; idx++) {
         final image = images[idx];
-        debugPrint('DEBUG submitReport: Image[$idx] - name=${image.name}, path=${image.path}');
-        
+        debugPrint(
+          'DEBUG submitReport: Image[$idx] - name=${image.name}, path=${image.path}',
+        );
+
         try {
           final bytes = await image.readAsBytes();
-          debugPrint('DEBUG submitReport: Image[$idx] - size=${bytes.length} bytes');
-          
+          debugPrint(
+            'DEBUG submitReport: Image[$idx] - size=${bytes.length} bytes',
+          );
+
           // Determine mime type based on extension
           MediaType contentType = MediaType('image', 'jpeg'); // default
           final name = image.name.toLowerCase();
@@ -150,33 +200,43 @@ class ApiService {
           } else if (name.endsWith('.webp')) {
             contentType = MediaType('image', 'webp');
           }
-          
-          debugPrint('DEBUG submitReport: Image[$idx] - contentType=${contentType.toString()}');
 
-          formData.files.add(MapEntry(
-            'images',
-            MultipartFile.fromBytes(
-              bytes, 
-              filename: image.name,
-              contentType: contentType,
+          debugPrint(
+            'DEBUG submitReport: Image[$idx] - contentType=${contentType.toString()}',
+          );
+
+          formData.files.add(
+            MapEntry(
+              'images',
+              MultipartFile.fromBytes(
+                bytes,
+                filename: image.name,
+                contentType: contentType,
+              ),
             ),
-          ));
+          );
           debugPrint('DEBUG submitReport: Image[$idx] added to formData');
         } catch (e) {
           debugPrint('ERROR submitReport: Failed to process image[$idx]: $e');
           rethrow;
         }
       }
-      debugPrint('DEBUG submitReport: Total files in formData: ${formData.files.length}');
+      debugPrint(
+        'DEBUG submitReport: Total files in formData: ${formData.files.length}',
+      );
     } else {
       debugPrint('DEBUG submitReport: No images to upload');
     }
-    
+
     try {
       debugPrint('DEBUG submitReport: Sending POST request to /reports');
       final response = await _dio.post(
         '/reports',
         data: formData,
+        options: Options(
+          sendTimeout: const Duration(seconds: 60),
+          receiveTimeout: const Duration(seconds: 120),
+        ),
         onSendProgress: onSendProgress,
       );
       debugPrint('DEBUG submitReport: Response status: ${response.statusCode}');
@@ -200,6 +260,10 @@ class SeatResponse {
   final int lockUntilTs;
   final String seatColor;
   final String adminColor;
+  final bool isDiseased;
+  final String? diseaseName;
+  final double? diseaseConfidence;
+  final int lastDiseaseCheckTs;
 
   SeatResponse({
     required this.seatId,
@@ -211,6 +275,10 @@ class SeatResponse {
     required this.lockUntilTs,
     required this.seatColor,
     required this.adminColor,
+    this.isDiseased = false,
+    this.diseaseName,
+    this.diseaseConfidence,
+    this.lastDiseaseCheckTs = 0,
   });
 
   factory SeatResponse.fromJson(Map<String, dynamic> json) {
@@ -224,6 +292,10 @@ class SeatResponse {
       lockUntilTs: json['lock_until_ts'] as int,
       seatColor: json['seat_color'] as String,
       adminColor: json['admin_color'] as String,
+      isDiseased: json['is_diseased'] as bool? ?? false,
+      diseaseName: json['disease_name'] as String?,
+      diseaseConfidence: (json['disease_confidence'] as num?)?.toDouble(),
+      lastDiseaseCheckTs: json['last_disease_check_ts'] as int? ?? 0,
     );
   }
 }
@@ -297,6 +369,10 @@ class ReportResponse {
   final List<String> images;
   final String status;
   final int createdAt;
+  final String? diseaseName;
+  final bool? isDiseased;
+  final double? confidence;
+  final String? treatmentPlan;
 
   ReportResponse({
     required this.id,
@@ -306,6 +382,10 @@ class ReportResponse {
     required this.images,
     required this.status,
     required this.createdAt,
+    this.diseaseName,
+    this.isDiseased,
+    this.confidence,
+    this.treatmentPlan,
   });
 
   factory ReportResponse.fromJson(Map<String, dynamic> json) {
@@ -314,9 +394,43 @@ class ReportResponse {
       seatId: json['seat_id'] as String,
       reporterId: json['reporter_id'] as int,
       text: json['text'] as String?,
-      images: (json['images'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      images:
+          (json['images'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
       status: json['status'] as String,
       createdAt: json['created_at'] as int,
+      diseaseName: json['disease_name'] as String?,
+      isDiseased: json['is_diseased'] as bool?,
+      confidence: (json['confidence'] as num?)?.toDouble(),
+      treatmentPlan: json['treatment_plan'] as String?,
+    );
+  }
+}
+
+class WateringCheckinResponse {
+  final int id;
+  final int adminUserId;
+  final int checkinTs;
+  final double latitude;
+  final double longitude;
+
+  WateringCheckinResponse({
+    required this.id,
+    required this.adminUserId,
+    required this.checkinTs,
+    required this.latitude,
+    required this.longitude,
+  });
+
+  factory WateringCheckinResponse.fromJson(Map<String, dynamic> json) {
+    return WateringCheckinResponse(
+      id: json['id'] as int,
+      adminUserId: json['admin_user_id'] as int,
+      checkinTs: json['checkin_ts'] as int,
+      latitude: (json['latitude'] as num).toDouble(),
+      longitude: (json['longitude'] as num).toDouble(),
     );
   }
 }

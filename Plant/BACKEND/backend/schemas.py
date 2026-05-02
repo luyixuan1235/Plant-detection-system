@@ -14,6 +14,10 @@ class SeatOut(BaseModel):
 	lock_until_ts: int
 	seat_color: str
 	admin_color: str
+	is_diseased: bool = False
+	disease_name: Optional[str] = None
+	disease_confidence: Optional[float] = None
+	last_disease_check_ts: int = 0
 
 	class Config:
 		from_attributes = True
@@ -52,6 +56,10 @@ class ReportOut(BaseModel):
 	images: List[str] = []
 	status: str
 	created_at: int
+	disease_name: Optional[str] = None
+	is_diseased: Optional[bool] = None
+	confidence: Optional[float] = None
+	treatment_plan: Optional[str] = None
 
 	class Config:
 		from_attributes = True
@@ -79,4 +87,20 @@ class SeatStatsOut(BaseModel):
 	occupancy_start_ts: int
 	object_only_occupy_seconds: int
 	is_malicious: bool
+
+
+class WateringCheckinCreate(BaseModel):
+	latitude: float
+	longitude: float
+
+
+class WateringCheckinOut(BaseModel):
+	id: int
+	admin_user_id: int
+	checkin_ts: int
+	latitude: float
+	longitude: float
+
+	class Config:
+		from_attributes = True
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'pages/floor_map_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'pages/login_page.dart';
-import 'utils/translations.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   runApp(const LibrarySeatApp());
@@ -18,7 +18,31 @@ class LibrarySeatApp extends StatefulWidget {
 class _LibrarySeatAppState extends State<LibrarySeatApp> {
   Locale _locale = const Locale('en', '');
 
-  void _handleLocaleChange(Locale value) {
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedLocale();
+  }
+
+  Future<void> _loadSavedLocale() async {
+    final prefs = await SharedPreferences.getInstance();
+    final languageCode = prefs.getString('language_code');
+    final countryCode = prefs.getString('country_code');
+    if (languageCode == null || !mounted) return;
+    setState(() {
+      _locale = Locale(languageCode, countryCode);
+    });
+  }
+
+  Future<void> _handleLocaleChange(Locale value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('language_code', value.languageCode);
+    if (value.countryCode == null || value.countryCode!.isEmpty) {
+      await prefs.remove('country_code');
+    } else {
+      await prefs.setString('country_code', value.countryCode!);
+    }
+    if (!mounted) return;
     setState(() {
       _locale = value;
     });
@@ -28,13 +52,8 @@ class _LibrarySeatAppState extends State<LibrarySeatApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: AppTranslations.get('library_seat_management', 'en'),
-      theme: ThemeData(
-        // 主题配色使用绿色系，符合图书馆应用概念
-        primarySwatch: Colors.green,
-        scaffoldBackgroundColor: const Color(0xFFEAF4E8), // 淡绿色背景
-        useMaterial3: true,
-      ),
+      title: 'Plant Monitoring System',
+      theme: AppTheme.light(),
       locale: _locale,
       supportedLocales: const [
         Locale('en', ''),

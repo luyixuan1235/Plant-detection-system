@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Text, Index
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Text, Index, Float
 from sqlalchemy.dialects.sqlite import JSON as SQLITE_JSON
 from sqlalchemy.orm import relationship
 
@@ -14,6 +14,7 @@ class User(Base):
 	username = Column(String(64), unique=True, nullable=False, index=True)
 	pass_hash = Column(String(256), nullable=False)
 	role = Column(String(16), nullable=False, default="student")  # student/admin
+	watering_checkins = relationship("WateringCheckin", back_populates="admin_user", cascade="all, delete-orphan")
 
 
 class Seat(Base):
@@ -36,6 +37,12 @@ class Seat(Base):
 	change_count = Column(Integer, default=0, nullable=False)
 	occupancy_start_ts = Column(Integer, default=0, nullable=False)
 
+	# Disease tracking
+	is_diseased = Column(Boolean, default=False, nullable=False)
+	disease_name = Column(String(128), nullable=True)
+	disease_confidence = Column(Float, nullable=True)
+	last_disease_check_ts = Column(Integer, default=0, nullable=False)
+
 	reports = relationship("Report", back_populates="seat", cascade="all, delete-orphan")
 
 	__table_args__ = (
@@ -55,5 +62,17 @@ class Report(Base):
 	created_at = Column(Integer, nullable=False)  # epoch seconds
 
 	seat = relationship("Seat", back_populates="reports")
+
+
+class WateringCheckin(Base):
+	__tablename__ = "watering_checkins"
+
+	id = Column(Integer, primary_key=True)
+	admin_user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+	checkin_ts = Column(Integer, nullable=False, index=True)  # epoch seconds
+	latitude = Column(Float, nullable=False)
+	longitude = Column(Float, nullable=False)
+
+	admin_user = relationship("User", back_populates="watering_checkins")
 
 

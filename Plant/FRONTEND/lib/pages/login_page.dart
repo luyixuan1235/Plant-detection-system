@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../config/api_config.dart';
-import '../models/seat_model.dart';
+import '../theme/app_theme.dart';
 import '../utils/translations.dart';
 import 'floor_map_page.dart';
 import 'admin_page.dart';
@@ -26,7 +26,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _loading = false;
   bool _isRegisterMode = false; // 是否处于注册模式
 
-  static const String _baseUrl = ApiConfig.baseUrl;
+  static final String _baseUrl = ApiConfig.baseUrl;
 
   late final Dio _dio;
 
@@ -40,22 +40,25 @@ class _LoginPageState extends State<LoginPage> {
       // Flutter Web 特殊配置
       followRedirects: true,
       // Treat 4xx/5xx as errors so DioException branch handles them.
-      validateStatus: (status) => status != null && status >= 200 && status < 300,
+      validateStatus: (status) =>
+          status != null && status >= 200 && status < 300,
     );
     _dio = Dio(options);
-    
+
     // 添加请求拦截器以处理Flutter Web的特殊情况
-    _dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) {
-        // 确保请求头正确设置
-        options.headers['Accept'] = 'application/json';
-        handler.next(options);
-      },
-      onError: (error, handler) {
-        // 处理网络错误
-        handler.next(error);
-      },
-    ));
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          // 确保请求头正确设置
+          options.headers['Accept'] = 'application/json';
+          handler.next(options);
+        },
+        onError: (error, handler) {
+          // 处理网络错误
+          handler.next(error);
+        },
+      ),
+    );
   }
 
   Future<void> _login() async {
@@ -90,11 +93,8 @@ class _LoginPageState extends State<LoginPage> {
 
       // OAuth2PasswordRequestForm expects form-urlencoded data
       // Use standard Map for x-www-form-urlencoded
-      final data = {
-        'username': id,
-        'password': pwd,
-      };
-      
+      final data = {'username': id, 'password': pwd};
+
       final res = await _dio.post(
         '/auth/login',
         data: data,
@@ -120,7 +120,12 @@ class _LoginPageState extends State<LoginPage> {
         throw Exception('Invalid response from server');
       }
 
-      await _persistSession(token: token, username: username, role: role, userId: userId);
+      await _persistSession(
+        token: token,
+        username: username,
+        role: role,
+        userId: userId,
+      );
 
       if (mounted) {
         _navigateToRole(role);
@@ -132,12 +137,13 @@ class _LoginPageState extends State<LoginPage> {
       } else if (e.response?.statusCode == 400) {
         msg = _extractErrorDetail(e.response?.data);
       } else if (e.type == DioExceptionType.connectionError) {
-        msg = 'Cannot connect to server. Check IP and CORS.\nError: ${e.message}\nBaseURL: $_baseUrl';
+        msg =
+            'Cannot connect to server. Check IP and CORS.\nError: ${e.message}\nBaseURL: $_baseUrl';
       } else if (e.type == DioExceptionType.badResponse) {
         msg = _extractErrorDetail(e.response?.data);
-      } else if (e.type == DioExceptionType.connectionTimeout || 
-                 e.type == DioExceptionType.receiveTimeout || 
-                 e.type == DioExceptionType.sendTimeout) {
+      } else if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
         msg = 'Connection timeout. Check if server is running at $_baseUrl';
       } else {
         msg = 'Network error: ${e.type}\n${e.message}';
@@ -179,13 +185,8 @@ class _LoginPageState extends State<LoginPage> {
       // 注册API使用JSON格式
       final res = await _dio.post(
         '/auth/register',
-        data: {
-          'username': id,
-          'password': pwd,
-        },
-        options: Options(
-          contentType: 'application/json',
-        ),
+        data: {'username': id, 'password': pwd},
+        options: Options(contentType: 'application/json'),
       );
       debugPrint('Login Response Status: ${res.statusCode}');
       debugPrint('Login Response Data: ${res.data}');
@@ -200,7 +201,12 @@ class _LoginPageState extends State<LoginPage> {
         throw Exception('Invalid response from server');
       }
 
-      await _persistSession(token: token, username: username, role: role, userId: userId);
+      await _persistSession(
+        token: token,
+        username: username,
+        role: role,
+        userId: userId,
+      );
 
       if (mounted) {
         _showError('Registration successful!');
@@ -235,7 +241,9 @@ class _LoginPageState extends State<LoginPage> {
       if (detail is String) return detail;
       if (detail is List && detail.isNotEmpty) {
         final first = detail.first;
-        if (first is Map && first['msg'] is String) return first['msg'] as String;
+        if (first is Map && first['msg'] is String) {
+          return first['msg'] as String;
+        }
         return first.toString();
       }
       return detail.toString();
@@ -246,13 +254,23 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _mockLogin({required String id}) async {
     await Future.delayed(const Duration(milliseconds: 600));
     final role = id == 'admin' ? 'admin' : 'user';
-    await _persistSession(token: 'mock-token-$role', username: id.isEmpty ? 'tester' : id, role: role, userId: 1);
+    await _persistSession(
+      token: 'mock-token-$role',
+      username: id.isEmpty ? 'tester' : id,
+      role: role,
+      userId: 1,
+    );
     if (mounted) {
       _navigateToRole(role);
     }
   }
 
-  Future<void> _persistSession({required String token, required String username, required String role, int? userId}) async {
+  Future<void> _persistSession({
+    required String token,
+    required String username,
+    required String role,
+    int? userId,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', token);
     await prefs.setString('username', username);
@@ -267,257 +285,210 @@ class _LoginPageState extends State<LoginPage> {
     final Widget target = role == 'admin'
         ? AdminPage(onLocaleChange: widget.onLocaleChange ?? (_) {})
         : FloorMapPage(onLocaleChange: widget.onLocaleChange ?? (_) {});
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => target),
-    );
+    Navigator.of(
+      context,
+    ).pushReplacement(MaterialPageRoute(builder: (_) => target));
   }
 
   String t(String key) {
-    final locale = Localizations.localeOf(context);
-    String languageCode = locale.languageCode;
-    if (languageCode == 'zh') {
-      languageCode = locale.countryCode == 'TW' ? 'zh_TW' : 'zh';
-    }
-    return AppTranslations.get(key, languageCode);
+    return AppTranslations.get(
+      key,
+      AppTranslations.localeKey(Localizations.localeOf(context)),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     final isMobile = screenSize.width < 600;
-    final formMaxWidth = isMobile ? screenSize.width : 980.0;
+    final formMaxWidth = isMobile ? screenSize.width : 520.0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FFF5),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: isMobile ? 20.0 : 32.0,
-              vertical: isMobile ? 24.0 : 36.0,
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [AppColors.mint, AppColors.canvas],
             ),
-            child: Center(
+          ),
+          child: Center(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 18.0 : 32.0,
+                vertical: isMobile ? 24.0 : 40.0,
+              ),
               child: ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: formMaxWidth),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    SizedBox(height: isMobile ? 36 : 48),
-                    Column(
-                      children: [
-                        Container(
-                          width: 92,
-                          height: 92,
+                child: Container(
+                  padding: EdgeInsets.all(isMobile ? 24 : 34),
+                  decoration: AppDecorations.tintedCard(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Align(
+                        alignment: Alignment.center,
+                        child: Container(
+                          width: 82,
+                          height: 82,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: const Color(0xFFEAF9E1),
-                            border: Border.all(color: AppColors.green, width: 1.6),
+                            color: AppColors.leaf,
+                            border: Border.all(
+                              color: AppColors.line,
+                              width: 1.4,
+                            ),
                           ),
                           child: const Icon(
                             Icons.eco,
-                            size: 42,
-                            color: Color(0xFF2E7D32),
+                            size: 38,
+                            color: AppColors.forest,
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        Text(
-                          'Plant Monitoring System',
-                          style: TextStyle(
-                            fontSize: isMobile ? 34 : 44,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF1A3E1A),
-                            letterSpacing: 0.2,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Plant Monitoring',
-                          style: TextStyle(
-                            fontSize: isMobile ? 20 : 24,
-                            color: const Color(0xFF3E7F3E),
-                            fontWeight: FontWeight.w500,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: isMobile ? 34 : 40),
-                    TextField(
-                      controller: _idController,
-                      decoration: InputDecoration(
-                        hintText: t('user_id') ?? 'User ID',
-                        prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF98A2B3)),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFE6E8EC)),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFE6E8EC)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.green, width: 1.8),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       ),
-                      keyboardType: TextInputType.text,
-                      textCapitalization: TextCapitalization.none,
-                      textInputAction: TextInputAction.next,
-                      onSubmitted: (_) => FocusScope.of(context).nextFocus(),
-                      style: const TextStyle(fontSize: 16),
-                      autofillHints: const [AutofillHints.username],
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _pwdController,
-                      decoration: InputDecoration(
-                        hintText: t('password') ?? 'Password',
-                        prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF98A2B3)),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Plant Monitoring System',
+                        style: TextStyle(
+                          fontSize: isMobile ? 28 : 34,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.forestDeep,
+                          letterSpacing: -0.4,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Plant Monitoring',
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: AppColors.textMuted,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 28),
+                      _buildLoginField(
+                        controller: _idController,
+                        hintText: t('user_id'),
+                        icon: Icons.person_outline,
+                        textInputAction: TextInputAction.next,
+                        autofillHints: const [AutofillHints.username],
+                        onSubmitted: (_) => FocusScope.of(context).nextFocus(),
+                      ),
+                      const SizedBox(height: 14),
+                      _buildLoginField(
+                        controller: _pwdController,
+                        hintText: t('password'),
+                        icon: Icons.lock_outline,
+                        obscureText: _obscure,
+                        textInputAction: TextInputAction.done,
+                        autofillHints: const [AutofillHints.password],
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscure ? Icons.visibility_off : Icons.visibility,
-                            color: const Color(0xFF98A2B3),
                           ),
                           onPressed: () => setState(() => _obscure = !_obscure),
                         ),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFE6E8EC)),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFE6E8EC)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.green, width: 1.8),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        onSubmitted: (_) =>
+                            _isRegisterMode ? _register() : _login(),
                       ),
-                      obscureText: _obscure,
-                      keyboardType: TextInputType.visiblePassword,
-                      textCapitalization: TextCapitalization.none,
-                      textInputAction: TextInputAction.done,
-                      onSubmitted: (_) => _isRegisterMode ? _register() : _login(),
-                      style: const TextStyle(fontSize: 16),
-                      autofillHints: const [AutofillHints.password],
-                    ),
-                    SizedBox(height: isMobile ? 24 : 28),
-                    SizedBox(
-                      height: isMobile ? 50 : 54,
-                      child: ElevatedButton(
-                        onPressed: _loading ? null : (_isRegisterMode ? _register : _login),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.green,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      const SizedBox(height: 22),
+                      SizedBox(
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: _loading
+                              ? null
+                              : (_isRegisterMode ? _register : _login),
+                          child: _loading
+                              ? const SizedBox(
+                                  height: 22,
+                                  width: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                              : Text(
+                                  _isRegisterMode ? t('register') : t('login'),
+                                  style: const TextStyle(fontSize: 17),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextButton(
+                        onPressed: _loading
+                            ? null
+                            : () {
+                                setState(() {
+                                  _isRegisterMode = !_isRegisterMode;
+                                  _idController.clear();
+                                  _pwdController.clear();
+                                });
+                              },
+                        child: Text(
+                          _isRegisterMode
+                              ? 'Back to login'
+                              : 'Create a new account',
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.language,
+                            size: 18,
+                            color: AppColors.textMuted,
                           ),
-                        ),
-                        child: _loading
-                            ? const SizedBox(
-                                height: 22,
-                                width: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                ),
-                              )
-                            : Text(
-                                _isRegisterMode ? (t('register') ?? 'Register') : (t('login') ?? 'Login'),
-                                style: TextStyle(
-                                  fontSize: isMobile ? 20 : 22,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.2,
-                                ),
+                          const SizedBox(width: 8),
+                          PopupMenuButton<String>(
+                            icon: Text(
+                              _getCurrentLanguageLabel(),
+                              style: const TextStyle(
+                                fontSize: 15,
+                                color: AppColors.textMuted,
+                                fontWeight: FontWeight.w700,
                               ),
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    TextButton(
-                      onPressed: _loading
-                          ? null
-                          : () {
-                              setState(() {
-                                _isRegisterMode = !_isRegisterMode;
-                                _idController.clear();
-                                _pwdController.clear();
-                              });
-                            },
-                      child: Text(
-                        _isRegisterMode ? 'Back to login' : 'Create a new account',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          color: Color(0xFF7C7C7C),
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.language, size: 18, color: Color(0xFF7C7C7C)),
-                        const SizedBox(width: 8),
-                        PopupMenuButton<String>(
-                          icon: Text(
-                            _getCurrentLanguageLabel(),
-                            style: const TextStyle(
-                              fontSize: 18,
-                              color: Color(0xFF7C7C7C),
-                              fontWeight: FontWeight.w400,
                             ),
+                            onSelected: _selectLanguage,
+                            itemBuilder: (context) {
+                              final currentLocale = Localizations.localeOf(
+                                context,
+                              );
+                              return [
+                                const PopupMenuItem(
+                                  value: 'en',
+                                  child: Text('English'),
+                                ),
+                                PopupMenuItem(
+                                  value: 'zh_CN',
+                                  child: Text(
+                                    AppTranslations.get(
+                                      'simplified_chinese',
+                                      currentLocale.languageCode,
+                                    ),
+                                  ),
+                                ),
+                                PopupMenuItem(
+                                  value: 'zh_TW',
+                                  child: Text(
+                                    AppTranslations.get(
+                                      'traditional_chinese',
+                                      currentLocale.languageCode,
+                                    ),
+                                  ),
+                                ),
+                              ];
+                            },
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          onSelected: (value) {
-                            if (widget.onLocaleChange != null) {
-                              Locale locale;
-                              switch (value) {
-                                case 'en':
-                                  locale = const Locale('en');
-                                  break;
-                                case 'zh_CN':
-                                  locale = const Locale('zh', 'CN');
-                                  break;
-                                case 'zh_TW':
-                                  locale = const Locale('zh', 'TW');
-                                  break;
-                                default:
-                                  locale = const Locale('en');
-                              }
-                              widget.onLocaleChange!(locale);
-                            }
-                          },
-                          itemBuilder: (context) {
-                            final currentLocale = Localizations.localeOf(context);
-                            return [
-                              const PopupMenuItem(
-                                value: 'en',
-                                child: Text('English'),
-                              ),
-                              PopupMenuItem(
-                                value: 'zh_CN',
-                                child: Text(AppTranslations.get('simplified_chinese', currentLocale.languageCode)),
-                              ),
-                              PopupMenuItem(
-                                value: 'zh_TW',
-                                child: Text(AppTranslations.get('traditional_chinese', currentLocale.languageCode)),
-                              ),
-                            ];
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -527,13 +498,52 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  Widget _buildLoginField({
+    required TextEditingController controller,
+    required String hintText,
+    required IconData icon,
+    required TextInputAction textInputAction,
+    Iterable<String>? autofillHints,
+    Widget? suffixIcon,
+    bool obscureText = false,
+    ValueChanged<String>? onSubmitted,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: obscureText
+          ? TextInputType.visiblePassword
+          : TextInputType.text,
+      textCapitalization: TextCapitalization.none,
+      textInputAction: textInputAction,
+      onSubmitted: onSubmitted,
+      style: const TextStyle(fontSize: 16, color: AppColors.text),
+      autofillHints: autofillHints,
+      decoration: InputDecoration(
+        hintText: hintText,
+        prefixIcon: Icon(icon),
+        suffixIcon: suffixIcon,
+      ),
+    );
+  }
+
+  void _selectLanguage(String value) {
+    if (widget.onLocaleChange == null) return;
+    final locale = switch (value) {
+      'zh_CN' => const Locale('zh', 'CN'),
+      'zh_TW' => const Locale('zh', 'TW'),
+      _ => const Locale('en'),
+    };
+    widget.onLocaleChange!(locale);
+  }
+
   String _getCurrentLanguageLabel() {
     final locale = Localizations.localeOf(context);
     if (locale.languageCode == 'zh') {
-      return locale.countryCode == 'TW' ? AppTranslations.get('traditional_chinese', locale.languageCode) : AppTranslations.get('simplified_chinese', locale.languageCode);
+      return locale.countryCode == 'TW'
+          ? AppTranslations.get('traditional_chinese', 'zh_TW')
+          : AppTranslations.get('simplified_chinese', 'zh');
     }
     return 'English';
   }
 }
-
-

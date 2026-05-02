@@ -9,7 +9,6 @@ from ..models import Seat
 from ..schemas import SeatOut, FloorSummary, SeatStatsOut
 from ..services.color import compute_seat_color, compute_admin_color, compute_floor_color
 from ..services.roi_loader import load_floor_config
-from ..services.yolo_service import refresh_floor
 import time
 
 
@@ -40,6 +39,10 @@ def list_seats(
 				lock_until_ts=s.lock_until_ts,
 				seat_color=base_color,
 				admin_color=admin_color,
+				is_diseased=s.is_diseased,
+				disease_name=s.disease_name,
+				disease_confidence=s.disease_confidence,
+				last_disease_check_ts=s.last_disease_check_ts,
 			)
 		)
 	return out
@@ -119,12 +122,33 @@ def refresh_floor_endpoint(
 				)
 			)
 		return out
-	
-	try:
-		seats = refresh_floor(db, cfg)
-	except Exception as e:
-		# 如果刷新失败（如视频文件不存在），返回当前数据库中的座位状态
-		seats = db.query(Seat).filter(Seat.floor_id == floor).all()
+
+	# The current plant-monitoring flow does not use the legacy YOLO/OpenCV video
+	# refresh. Keep this endpoint lightweight by syncing seats from floor config.
+	existing = {s.seat_id: s for s in db.query(Seat).filter(Seat.floor_id == floor).all()}
+	for item in cfg.get("seats", []):
+		seat_id = item.get("seat_id")
+		if not seat_id or seat_id in existing:
+			continue
+		seat = Seat(
+			seat_id=seat_id,
+			floor_id=floor,
+			has_power=bool(item.get("has_power", False)),
+			is_empty=True,
+			is_reported=False,
+			is_malicious=False,
+			lock_until_ts=0,
+			last_update_ts=int(time.time()),
+			last_state_is_empty=True,
+			daily_empty_seconds=0,
+			total_empty_seconds=0,
+			change_count=0,
+			occupancy_start_ts=0,
+		)
+		db.add(seat)
+		existing[seat_id] = seat
+	db.commit()
+	seats = list(existing.values())
 	
 	out: List[SeatOut] = []
 	for s in seats:
@@ -143,6 +167,10 @@ def refresh_floor_endpoint(
 				lock_until_ts=s.lock_until_ts,
 				seat_color=base_color,
 				admin_color=admin_color,
+				is_diseased=s.is_diseased,
+				disease_name=s.disease_name,
+				disease_confidence=s.disease_confidence,
+				last_disease_check_ts=s.last_disease_check_ts,
 			)
 		)
 	return out

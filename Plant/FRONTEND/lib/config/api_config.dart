@@ -1,23 +1,29 @@
 class ApiConfig {
-  // 后端 API 地址配置
-  // 
+  // 后端 API 地址配置。
+  //
   // 使用说明：
-  // - Chrome浏览器（Mac本地）: 使用 localhost:8000
-  // - 真机测试: 使用 Mac 的局域网 IP（当前: 10.244.100.167）
-  // 
-  // 切换方法：
-  // 1. Chrome浏览器运行：取消注释下面一行，注释掉 IP 地址那一行
-  // 2. 真机测试：注释掉下面一行，取消注释 IP 地址那一行
-  
-  // Chrome浏览器（Mac本地开发）- 使用 localhost 避免 CORS 问题
-  // static const String baseUrl = 'http://localhost:8000';
-  
-  // 使用 127.0.0.1 作为替代方案（如果 localhost 有问题）
-  // static const String baseUrl = 'http://127.0.0.1:8000';
-  
-  // 本机开发（Windows）使用本地后端地址
-  static const String baseUrl = 'http://127.0.0.1:8000';
-  
+  // - 电脑本地访问时，默认请求 http://127.0.0.1:8000
+  // - 手机通过局域网访问前端时，默认请求 http://当前网页主机:8000
+  // - 使用 Cloudflare tunnel 或自定义后端时，启动前端时传入：
+  //   flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8085 --dart-define=API_BASE_URL=https://xxxx.trycloudflare.com
+  //
+  // 手机浏览器里的 127.0.0.1 指向手机自己，不是运行后端的电脑。
+  // iPhone Safari 的二维码扫描和拍照上传需要 HTTPS，因此手机访问推荐使用 Cloudflare tunnel。
+  static const String _configuredBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+  );
+
+  static String get baseUrl {
+    if (_configuredBaseUrl.isNotEmpty) return _configuredBaseUrl;
+
+    final host = Uri.base.host;
+    if (host.isNotEmpty && host != 'localhost' && host != '127.0.0.1') {
+      return 'http://$host:8000';
+    }
+
+    return 'http://127.0.0.1:8000';
+  }
+
   // 获取当前配置的 baseURL（用于调试）
   static String get currentBaseUrl => baseUrl;
 }

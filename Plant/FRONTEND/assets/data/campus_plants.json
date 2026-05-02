@@ -1,0 +1,54 @@
+{
+  "campus_name": "Campus Plant Monitoring",
+  "building": {
+    "id": "B1",
+    "name": "Teaching Building A",
+    "x": 0.38,
+    "y": 0.24,
+    "width": 0.26,
+    "height": 0.42
+  },
+  "default_location": {
+    "name": "Teaching Building A",
+    "latitude": 31.2304,
+    "longitude": 121.4737
+  },
+  "plants": [
+    { "id": "T01", "name": "Apple",      "x": 0.08, "y": 0.08, "status": "healthy", "species": "Malus domestica — a deciduous tree in the Rosaceae family producing crisp, sweet to tart fruits.", "location": "Building A T01", "info_url": "https://baike.baidu.com/item/%E8%8B%B9%E6%9E%9C" },
+    { "id": "T02", "name": "Bell pepper","x": 0.20, "y": 0.08, "status": "healthy", "species": "Capsicum annuum — a cultivar producing sweet, mild, bell-shaped fruits in red, yellow, or green.", "location": "Building A T02", "info_url": "https://baike.baidu.com/item/%E7%94%9C%E6%A4%92" },
+    { "id": "T03", "name": "Blueberry",  "x": 0.32, "y": 0.08, "status": "healthy", "species": "Vaccinium corymbosum — a perennial shrub bearing clusters of blue-purple berries rich in antioxidants.", "location": "Building A T03", "info_url": "https://baike.baidu.com/item/%E8%93%9D%E8%8E%93" },
+    { "id": "T04", "name": "Cherry",     "x": 0.44, "y": 0.08, "status": "healthy", "species": "Prunus avium — a stone fruit tree producing small, round, sweet to sour drupes.", "location": "Building A T04", "info_url": "https://baike.baidu.com/item/%E6%A8%B1%E6%A1%83" },
+    { "id": "T05", "name": "Corn",       "x": 0.56, "y": 0.08, "status": "healthy", "species": "Zea mays — a tall annual cereal crop producing edible kernels arranged on a cob.", "location": "Building A T05", "info_url": "https://baike.baidu.com/item/%E7%8E%89%E7%B1%B3" },
+    { "id": "T06", "name": "Grape",      "x": 0.68, "y": 0.08, "status": "healthy", "species": "Vitis vinifera — a woody climbing vine bearing clusters of juicy berries used fresh or for wine.", "location": "Building A T06", "info_url": "https://baike.baidu.com/item/%E8%91%A1%E8%90%84" },
+    { "id": "T07", "name": "Peach",      "x": 0.80, "y": 0.08, "status": "healthy", "species": "Prunus persica — a deciduous tree bearing fuzzy-skinned, sweet stone fruits with yellow-white flesh.", "location": "Building A T07", "info_url": "https://baike.baidu.com/item/%E6%A1%83" },
+    { "id": "T08", "name": "Potato",     "x": 0.92, "y": 0.08, "status": "healthy", "species": "Solanum tuberosum — a starchy tuberous crop, one of the world's most widely consumed vegetables.", "location": "Building A T08", "info_url": "https://baike.baidu.com/item/%E9%A9%AC%E9%93%83%E8%96%AF" },
+
+    { "id": "T09", "name": "Raspberry",  "x": 0.10, "y": 0.24, "status": "healthy", "species": "Rubus idaeus — a perennial shrub bearing red aggregate fruits composed of small drupelets.", "location": "Building A T09", "info_url": "https://baike.baidu.com/item/%E8%A6%86%E7%9B%86%E5%AD%90" },
+    { "id": "T10", "name": "Soyabean",   "x": 0.22, "y": 0.24, "status": "healthy", "species": "Glycine max — a legume rich in protein and oil, widely cultivated for food and industrial use.", "location": "Building A T10", "info_url": "https://baike.baidu.com/item/%E5%A4%A7%E8%B1%86" },
+    { "id": "T11", "name": "Squash",     "x": 0.10, "y": 0.38, "status": "healthy", "species": "Cucurbita pepo — a cucurbit vine bearing fleshy fruits in varied shapes, sizes, and colors.", "location": "Building A T11", "info_url": "https://baike.baidu.com/item/%E5%8D%97%E7%93%9C" },
+    { "id": "T12", "name": "Strawberry", "x": 0.22, "y": 0.38, "status": "healthy", "species": "Fragaria x ananassa — a low-growing plant bearing sweet, red aggregate accessory fruits.", "location": "Building A T12", "info_url": "https://baike.baidu.com/item/%E8%8D%89%E8%8E%93" },
+    { "id": "T13", "name": "Tomato",     "x": 0.10, "y": 0.52, "status": "healthy", "species": "Solanum lycopersicum — a fruiting plant in the nightshade family bearing red to yellow fleshy berries.", "location": "Building A T13", "info_url": "https://baike.baidu.com/item/%E7%95%AA%E8%8C%84" },
+    { "id": "T14", "name": "Apple",      "x": 0.22, "y": 0.52, "status": "healthy", "species": "Malus domestica — a deciduous tree in the Rosaceae family producing crisp, sweet to tart fruits.", "location": "Building A T14", "info_url": "https://baike.baidu.com/item/%E8%8B%B9%E6%9E%9C" },
+
+    { "id": "T15", "name": "Grape",      "x": 0.78, "y": 0.24, "status": "healthy", "species": "Vitis vinifera — a woody climbing vine bearing clusters of juicy berries used fresh or for wine.", "location": "Building A T15", "info_url": "https://baike.baidu.com/item/%E8%91%A1%E8%90%84" },
+    { "id": "T16", "name": "Tomato",     "x": 0.90, "y": 0.24, "status": "healthy", "species": "Solanum lycopersicum — a fruiting plant in the nightshade family bearing red to yellow fleshy berries.", "location": "Building A T16", "info_url": "https://baike.baidu.com/item/%E7%95%AA%E8%8C%84" },
+    { "id": "T17", "name": "Cherry",     "x": 0.78, "y": 0.38, "status": "healthy", "species": "Prunus avium — a stone fruit tree producing small, round, sweet to sour drupes.", "location": "Building A T17", "info_url": "https://baike.baidu.com/item/%E6%A8%B1%E6%A1%83" },
+    { "id": "T18", "name": "Blueberry",  "x": 0.90, "y": 0.38, "status": "healthy", "species": "Vaccinium corymbosum — a perennial shrub bearing clusters of blue-purple berries rich in antioxidants.", "location": "Building A T18", "info_url": "https://baike.baidu.com/item/%E8%93%9D%E8%8E%93" },
+    { "id": "T19", "name": "Corn",       "x": 0.78, "y": 0.52, "status": "healthy", "species": "Zea mays — a tall annual cereal crop producing edible kernels arranged on a cob.", "location": "Building A T19", "info_url": "https://baike.baidu.com/item/%E7%8E%89%E7%B1%B3" },
+    { "id": "T20", "name": "Peach",      "x": 0.90, "y": 0.52, "status": "healthy", "species": "Prunus persica — a deciduous tree bearing fuzzy-skinned, sweet stone fruits with yellow-white flesh.", "location": "Building A T20", "info_url": "https://baike.baidu.com/item/%E6%A1%83" },
+
+    { "id": "T21", "name": "Strawberry", "x": 0.08, "y": 0.82, "status": "healthy", "species": "Fragaria x ananassa — a low-growing plant bearing sweet, red aggregate accessory fruits.", "location": "Building A T21", "info_url": "https://baike.baidu.com/item/%E8%8D%89%E8%8E%93" },
+    { "id": "T22", "name": "Bell pepper","x": 0.20, "y": 0.82, "status": "healthy", "species": "Capsicum annuum — a cultivar producing sweet, mild, bell-shaped fruits in red, yellow, or green.", "location": "Building A T22", "info_url": "https://baike.baidu.com/item/%E7%94%9C%E6%A4%92" },
+    { "id": "T23", "name": "Raspberry",  "x": 0.32, "y": 0.82, "status": "healthy", "species": "Rubus idaeus — a perennial shrub bearing red aggregate fruits composed of small drupelets.", "location": "Building A T23", "info_url": "https://baike.baidu.com/item/%E8%A6%86%E7%9B%86%E5%AD%90" },
+    { "id": "T24", "name": "Soyabean",   "x": 0.44, "y": 0.82, "status": "healthy", "species": "Glycine max — a legume rich in protein and oil, widely cultivated for food and industrial use.", "location": "Building A T24", "info_url": "https://baike.baidu.com/item/%E5%A4%A7%E8%B1%86" },
+    { "id": "T25", "name": "Squash",     "x": 0.56, "y": 0.82, "status": "healthy", "species": "Cucurbita pepo — a cucurbit vine bearing fleshy fruits in varied shapes, sizes, and colors.", "location": "Building A T25", "info_url": "https://baike.baidu.com/item/%E5%8D%97%E7%93%9C" },
+    { "id": "T26", "name": "Apple",      "x": 0.68, "y": 0.82, "status": "healthy", "species": "Malus domestica — a deciduous tree in the Rosaceae family producing crisp, sweet to tart fruits.", "location": "Building A T26", "info_url": "https://baike.baidu.com/item/%E8%8B%B9%E6%9E%9C" },
+    { "id": "T27", "name": "Potato",     "x": 0.80, "y": 0.82, "status": "healthy", "species": "Solanum tuberosum — a starchy tuberous crop, one of the world's most widely consumed vegetables.", "location": "Building A T27", "info_url": "https://baike.baidu.com/item/%E9%A9%AC%E9%93%83%E8%96%AF" },
+    { "id": "T28", "name": "Tomato",     "x": 0.92, "y": 0.82, "status": "healthy", "species": "Solanum lycopersicum — a fruiting plant in the nightshade family bearing red to yellow fleshy berries.", "location": "Building A T28", "info_url": "https://baike.baidu.com/item/%E7%95%AA%E8%8C%84" },
+    { "id": "T29", "name": "Cherry",     "x": 0.80, "y": 0.92, "status": "healthy", "species": "Prunus avium — a stone fruit tree producing small, round, sweet to sour drupes.", "location": "Building A T29", "info_url": "https://baike.baidu.com/item/%E6%A8%B1%E6%A1%83" },
+    { "id": "T30", "name": "Grape",      "x": 0.92, "y": 0.92, "status": "healthy", "species": "Vitis vinifera — a woody climbing vine bearing clusters of juicy berries used fresh or for wine.", "location": "Building A T30", "info_url": "https://baike.baidu.com/item/%E8%91%A1%E8%90%84" },
+
+    { "id": "T31", "name": "Blueberry",  "x": 0.32, "y": 0.20, "status": "healthy", "species": "Vaccinium corymbosum — a perennial shrub bearing clusters of blue-purple berries rich in antioxidants.", "location": "Building A T31", "info_url": "https://baike.baidu.com/item/%E8%93%9D%E8%8E%93" },
+    { "id": "T32", "name": "Corn",       "x": 0.68, "y": 0.20, "status": "healthy", "species": "Zea mays — a tall annual cereal crop producing edible kernels arranged on a cob.", "location": "Building A T32", "info_url": "https://baike.baidu.com/item/%E7%8E%89%E7%B1%B3" }
+  ]
+}

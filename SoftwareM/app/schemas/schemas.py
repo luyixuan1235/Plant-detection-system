@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 # User Schemas
 class UserBase(BaseModel):
@@ -29,6 +29,17 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: Optional[str] = None
+
+class LoginResponse(BaseModel):
+    access_token: str
+    role: str
+    username: str
+    user_id: int
+
+class RegisterRequest(BaseModel):
+    username: str
+    password: str
+    email: Optional[EmailStr] = None
 
 # Tree Schemas
 class TreeBase(BaseModel):
@@ -75,3 +86,37 @@ class PatrolResponse(PatrolBase):
 
     class Config:
         from_attributes = True
+
+# Seating/Floor/Reports schemas
+class SeatResponse(BaseModel):
+    seat_id: str
+    floor_id: str
+    has_power: bool
+    is_empty: bool
+    is_reported: bool
+    is_malicious: bool
+    lock_until_ts: Optional[int] = None
+    seat_color: str
+    admin_color: str
+
+class FloorResponse(BaseModel):
+    floor_id: str
+    empty_count: int
+    total_count: int
+    floor_color: str
+
+class AnomalyResponse(SeatResponse):
+    last_report_id: Optional[int] = None
+
+class ReportResponse(BaseModel):
+    id: int
+    seat_id: str
+    reporter_id: int
+    text: Optional[str] = None
+    images: List[str]
+    status: str
+    created_at: int
+    disease_name: Optional[str] = None
+    is_diseased: Optional[bool] = None
+    confidence: Optional[float] = None
+    treatment_plan: Optional[str] = None

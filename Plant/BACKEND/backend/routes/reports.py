@@ -10,6 +10,8 @@ from sqlalchemy.orm import Session
 from ..db import get_db
 from ..models import Report, Seat
 from ..schemas import ReportOut
+from ..services.disease_detection import disease_detector
+from ..services.deepseek_service import deepseek_service
 
 
 router = APIRouter(prefix="", tags=["reports"])
@@ -96,7 +98,7 @@ def _save_report_images(report_id: int, files: Optional[List[UploadFile]]) -> Li
 
 
 @router.post("/reports", response_model=ReportOut)
-def create_report(
+async def create_report(
 	seat_id: str = Form(...),
 	reporter_id: int = Form(...),
 	text: Optional[str] = Form(default=None),
@@ -108,6 +110,7 @@ def create_report(
 	print(f"DEBUG: Text: {text}")
 	print(f"DEBUG: Images parameter type: {type(images)}")
 	print(f"DEBUG: Images received: {len(images) if images else 0}")
+	now = int(time.time())
 	
 	if images:
 		print(f"DEBUG: Processing {len(images)} image(s)...")
@@ -118,9 +121,26 @@ def create_report(
 
 	seat = db.query(Seat).filter(Seat.seat_id == seat_id).first()
 	if not seat:
-		raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="seat_id not found")
+		if not seat_id.upper().startswith("T"):
+			raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="seat_id not found")
+		seat = Seat(
+			seat_id=seat_id,
+			floor_id="PLANT",
+			has_power=False,
+			is_empty=True,
+			is_reported=False,
+			is_malicious=False,
+			lock_until_ts=0,
+			last_update_ts=now,
+			last_state_is_empty=True,
+			daily_empty_seconds=0,
+			total_empty_seconds=0,
+			change_count=0,
+			occupancy_start_ts=0,
+		)
+		db.add(seat)
+		db.flush()
 
-	now = int(time.time())
 	report = Report(
 		seat_id=seat_id,
 		reporter_id=reporter_id,
@@ -146,8 +166,48 @@ def create_report(
 		db.rollback()
 		raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to save images: {str(e)}")
 
+	detection_result = None
+	treatment_plan = None
+	if image_paths:
+		first_image_path = Path(__file__).resolve().parents[2] / "config" / image_paths[0]
+		try:
+			detection_result = disease_detector.predict(first_image_path)
+			result_lines = [
+				f"Disease: {detection_result.get('disease_name')}",
+				f"Status: {'Diseased' if detection_result.get('is_diseased') else 'Healthy'}",
+				f"Confidence: {detection_result.get('confidence', 0):.2%}",
+			]
+
+			if detection_result.get('is_diseased'):
+				treatment_plan = await deepseek_service.get_treatment_advice(
+					detection_result.get('disease_name')
+				)
+
+			if text:
+				result_lines.extend(["", "User Note:", text])
+			report.text = "\n".join(result_lines)
+		except FileNotFoundError as e:
+			db.rollback()
+			raise HTTPException(
+				status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+				detail=f"Model file not found: {e}",
+			)
+		except Exception as e:
+			db.rollback()
+			raise HTTPException(
+				status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+				detail=f"Disease prediction failed: {type(e).__name__}: {e}",
+			)
+
 	report.images = image_paths
 	seat.is_reported = True
+
+	# Update seat disease status
+	if detection_result:
+		seat.is_diseased = detection_result.get('is_diseased', False)
+		seat.disease_name = detection_result.get('disease_name')
+		seat.disease_confidence = detection_result.get('confidence')
+		seat.last_disease_check_ts = now
 
 	db.add(report)
 	db.add(seat)
@@ -156,6 +216,12 @@ def create_report(
 
 	print(f"DEBUG: Report saved successfully. Images: {report.images}")
 	print("=" * 60)
-	return ReportOut.model_validate(report)
+	response = ReportOut.model_validate(report)
+	if detection_result:
+		response.disease_name = detection_result.get("disease_name")
+		response.is_diseased = detection_result.get("is_diseased")
+		response.confidence = detection_result.get("confidence")
+		response.treatment_plan = treatment_plan
+	return response
 
 

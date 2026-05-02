@@ -41,11 +41,23 @@ class AppTranslations {
       'report_images': 'Report Images',
       'no_images': 'No images',
       'lock_seat': 'Lock Seat',
-      'lock_confirm': 'Lock this seat for 5 minutes? During this time, the seat status will remain as you set it.',
+      'lock_confirm':
+          'Lock this seat for 5 minutes? During this time, the seat status will remain as you set it.',
       'locked': 'Locked',
       'view_on_map': 'View on Map',
       'go_to_floor_map': 'Go to Floor Map',
-      'library_seat_management': 'Library Seat Management',
+      'library_seat_management': 'Plant Monitoring System',
+      'campus_plant_distribution': 'Campus Plant Distribution',
+      'scan_plant_qr_code': 'Scan Plant QR Code',
+      'admin_panel': 'Admin Panel',
+      'admin_watering_check_in': 'Admin Watering Check-in',
+      'view_plant_map': 'View Plant Map',
+      'latest_watering_check_in_time': 'Latest Watering Check-in Time',
+      'latest_5_check_in_records': 'Latest 5 Check-in Records',
+      'default_campus_location': 'Default campus location',
+      'no_records_yet': 'No records yet',
+      'recorded': 'Recorded',
+      'no_watering_check_in_records_yet': 'No watering check-in records yet.',
       'user_id': 'User ID',
       'password': 'Password',
       'login': 'Login',
@@ -65,7 +77,8 @@ class AppTranslations {
       'load_anomalies_timeout': 'Loading anomalies timeout',
       'load_anomalies_failed': 'Failed to load anomalies',
       'load_timeout_retry': 'Loading timeout, please try again later',
-      'network_connection_failed': 'Network connection failed, please check your network',
+      'network_connection_failed':
+          'Network connection failed, please check your network',
       'load_failed': 'Loading failed',
       'refresh_timeout_retry': 'Refresh timeout, please try again later',
       'server_error_retry': 'Server error, please try again later',
@@ -78,7 +91,8 @@ class AppTranslations {
       'simplified_chinese': 'Simplified Chinese',
       'traditional_chinese': 'Traditional Chinese',
     },
-    'zh': { // 简体中文
+    'zh': {
+      // 简体中文
       'language': '语言',
       'logout': '退出登录',
       'logout_confirm': '确定要退出登录吗？',
@@ -122,7 +136,18 @@ class AppTranslations {
       'locked': '已锁定',
       'view_on_map': '在地图上查看',
       'go_to_floor_map': '跳转到楼层地图',
-      'library_seat_management': '图书馆座位管理',
+      'library_seat_management': 'Plant Monitoring System',
+      'campus_plant_distribution': '校园植物分布',
+      'scan_plant_qr_code': '扫描植物二维码',
+      'admin_panel': '管理员面板',
+      'admin_watering_check_in': '管理员浇水打卡',
+      'view_plant_map': '查看植物地图',
+      'latest_watering_check_in_time': '最近浇水打卡时间',
+      'latest_5_check_in_records': '最近 5 条打卡记录',
+      'default_campus_location': '默认校园位置',
+      'no_records_yet': '暂无记录',
+      'recorded': '已记录',
+      'no_watering_check_in_records_yet': '暂无浇水打卡记录。',
       'user_id': '用户ID',
       'password': '密码',
       'login': '登录',
@@ -155,7 +180,8 @@ class AppTranslations {
       'simplified_chinese': '简体中文',
       'traditional_chinese': '繁體中文',
     },
-    'zh_TW': { // 繁體中文
+    'zh_TW': {
+      // 繁體中文
       'language': '語言',
       'logout': '登出',
       'logout_confirm': '確定要登出嗎？',
@@ -199,7 +225,18 @@ class AppTranslations {
       'locked': '已鎖定',
       'view_on_map': '在地圖上查看',
       'go_to_floor_map': '跳轉到樓層地圖',
-      'library_seat_management': '圖書館座位管理',
+      'library_seat_management': 'Plant Monitoring System',
+      'campus_plant_distribution': '校園植物分佈',
+      'scan_plant_qr_code': '掃描植物 QR Code',
+      'admin_panel': '管理員面板',
+      'admin_watering_check_in': '管理員澆水打卡',
+      'view_plant_map': '查看植物地圖',
+      'latest_watering_check_in_time': '最近澆水打卡時間',
+      'latest_5_check_in_records': '最近 5 條打卡記錄',
+      'default_campus_location': '預設校園位置',
+      'no_records_yet': '暫無記錄',
+      'recorded': '已記錄',
+      'no_watering_check_in_records_yet': '暫無澆水打卡記錄。',
       'user_id': '用戶ID',
       'password': '密碼',
       'login': '登入',
@@ -241,5 +278,12 @@ class AppTranslations {
     }
     // 默认回退到英文
     return _localizedValues['en']![key] ?? key;
+  }
+
+  static String localeKey(dynamic locale) {
+    if (locale.languageCode == 'zh') {
+      return locale.countryCode == 'TW' ? 'zh_TW' : 'zh';
+    }
+    return locale.languageCode;
   }
 }

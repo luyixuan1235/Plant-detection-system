@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.core.database import engine, Base
 from app.routers import auth, trees, patrols
+from app.routers.compat_auth import router as compat_auth_router
+from app.routers.floors import router as floors_router
 import os
 
 # Create database tables
@@ -17,7 +19,7 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify exact origins
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -31,6 +33,8 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.include_router(auth.router)
 app.include_router(trees.router)
 app.include_router(patrols.router)
+app.include_router(compat_auth_router)
+app.include_router(floors_router)
 
 @app.get("/")
 def root():

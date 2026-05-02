@@ -18,7 +18,7 @@ class DiseaseDetector:
             'grape leaf', 'grape leaf black rot'
         ]
         self.num_classes = len(self.class_names)
-        self.model = self._load_model()
+        self.model = None
         self.transform = transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(224),
@@ -36,6 +36,9 @@ class DiseaseDetector:
         return model
 
     def predict(self, image_path: str):
+        if self.model is None:
+            self.model = self._load_model()
+
         image = Image.open(image_path).convert('RGB')
         input_tensor = self.transform(image)
         input_batch = input_tensor.unsqueeze(0).to(self.device)

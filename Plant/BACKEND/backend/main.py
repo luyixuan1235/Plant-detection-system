@@ -1,17 +1,25 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
+from dotenv import load_dotenv
 
 from .db import Base, engine
 from .routes import health as health_routes
 from .routes import seats as seats_routes
 from .routes import reports as reports_routes
 from .routes import admin as admin_routes
+from .routes import watering as watering_routes
 from .scheduler import FloorRefreshScheduler
 from .routes import auth as auth_routes
+
+# Load .env file from SoftwareM directory
+env_path = Path(__file__).resolve().parents[3] / "SoftwareM" / ".env"
+if env_path.exists():
+	load_dotenv(env_path)
 
 
 def create_app() -> FastAPI:
@@ -32,6 +40,7 @@ def create_app() -> FastAPI:
 	app.include_router(seats_routes.router)
 	app.include_router(reports_routes.router)
 	app.include_router(admin_routes.router)
+	app.include_router(watering_routes.router)
 
 	# Static files for report images
 	base_dir = Path(__file__).resolve().parents[1]
