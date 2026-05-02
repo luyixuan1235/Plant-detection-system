@@ -270,5 +270,5 @@ cloudflared tunnel --protocol http2 --edge-ip-version 4 --url http://localhost:8
 3. 启动前端时用 `--dart-define=API_BASE_URL=后端tunnel地址`
 4. 起前端 web-server（8085）
 5. 开前端 tunnel（8085 -> https，使用 `--protocol http2 --edge-ip-version 4`）
-6. iPhone 打开前端 tunnel 地址并登录
+6. iPhone 打开前端 tunnel 地址来登录
 
